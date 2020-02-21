@@ -1,0 +1,48 @@
+plugins {
+    // Apply the scala plugin to add support for Scala
+    id 'scala'
+
+    // Enables the use of ScalaTest in a Gradle Scala project
+    id 'com.github.maiflai.scalatest' version "0.26"
+
+    // Gradle plugin to create fat/uber JARs, apply file transforms, and relocate packages for applications and libraries. Gradle version of Maven's Shade plugin.
+//    id 'com.github.johnrengelman.shadow'
+
+    id 'idea'
+}
+
+ext {
+    scalaMajorVersion = '2.12'
+    scalaVersion = '2.12.10'
+    scalaTestVersion = '3.1.0'
+    scalaLoggingVersion = '3.5.0'
+    kafkaVersion = '2.4.0'
+    zeromqVersion = '0.4.0'
+    slf4jVersion = '1.7.30'
+}
+
+dependencies {
+    implementation group: 'org.scala-lang', name: 'scala-library', version: scalaVersion
+    implementation group: 'com.typesafe.scala-logging', name: 'scala-logging_'+scalaMajorVersion, version: scalaLoggingVersion
+    implementation group: 'org.apache.kafka', name: 'connect-api', version: kafkaVersion
+    implementation group: 'org.zeromq', name: 'jeromq', version: zeromqVersion
+
+    testImplementation group: 'org.scalatest', name: 'scalatest_'+scalaMajorVersion, version: scalaTestVersion
+    testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: slf4jVersion
+
+    testImplementation group: 'org.scalatestplus', name: 'scalatestplus-mockito_'+scalaMajorVersion, version: '1.0.0-M2'
+
+    implementation group: 'com.vladsch.flexmark', name: 'flexmark-all', version: '0.35.10' // required by scalatest (only this version)
+//    testRuntime 'org.pegdown:pegdown:1.4.2' // required by com.github.maiflai.scalatest
+}
+
+repositories {
+    // Use jcenter for resolving dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    jcenter()
+
+    mavenLocal()
+    mavenCentral()
+    maven { url "http://packages.confluent.io/maven/" }
+    maven { url "http://repo.typesafe.com/typesafe/releases/" }
+}
