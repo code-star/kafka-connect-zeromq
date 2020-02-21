@@ -1,0 +1,15 @@
+# gradle
+.gradle
+gradle/
+build
+
+# intellij idea
+*.log
+*.iml
+*.ipr
+*.iws
+.idea
+
+# scala
+*.class
+*.sc
