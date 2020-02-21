@@ -9,9 +9,9 @@ object ZeroMQSourceRecord {
 
   // TODO: convert msg to Array[Byte] using a org.apache.kafka.connect.storage.Converter
   def from(config: ZeroMQSourceConnectorConfig, msg: Object): SourceRecord = {
-    val sourcePartition = Map("routingKey" -> "envelope.getRoutingKey").asJava
-    val sourceOffset = Map("deliveryTag" -> "envelope.getDeliveryTag").asJava
-    val topic = config.getString(ZeroMQSourceConnectorConfig.kafkaTopicConf)
+    val sourcePartition = Map("partition" -> "partition1").asJava
+    val sourceOffset = Map("offset" -> "0").asJava
+    val topic = config.kafkaTopic
     new SourceRecord(sourcePartition, sourceOffset, topic, Schema.STRING_SCHEMA, msg)
   }
 

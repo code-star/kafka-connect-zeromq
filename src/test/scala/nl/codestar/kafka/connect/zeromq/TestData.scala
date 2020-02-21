@@ -9,12 +9,13 @@ object TestData {
 
   object Test1 {
     val url = s"tcp://localhost:$port"
-    val envelopes = Seq("envelope1", "envelope2")
+    val allEnvelopes = Seq("envelope1", "envelope2")
+    val subscribedEnvelopes: String = allEnvelopes.head
     val kafkaTopic = "kafka-topic-1"
 
     val settings = new util.HashMap[String, String]()
     settings.put(ZeroMQSourceConnectorConfig.urlConf, url)
-    settings.put(ZeroMQSourceConnectorConfig.envelopesConf, envelopes.mkString(","))
+    settings.put(ZeroMQSourceConnectorConfig.envelopesConf, subscribedEnvelopes)
     settings.put(ZeroMQSourceConnectorConfig.kafkaTopicConf, kafkaTopic)
 
     val config = new ZeroMQSourceConnectorConfig(settings)
@@ -23,12 +24,13 @@ object TestData {
   object Test2 {
     val url = "http://gtfs.ovapi.nl/nl/vehiclePositions.pb"
     val port = "7664"
-    val envelopes = Seq("/RIG/NStreinpositiesInterface5")
+    val allEnvelopes = Seq("/RIG/NStreinpositiesInterface5")
+    val envelopesToSubscribe: String = allEnvelopes.head
     val kafkaTopic = "vehicle-positions"
 
     val settings = new util.HashMap[String, String]()
     settings.put(ZeroMQSourceConnectorConfig.urlConf, url)
-    settings.put(ZeroMQSourceConnectorConfig.envelopesConf, envelopes.mkString(","))
+    settings.put(ZeroMQSourceConnectorConfig.envelopesConf, envelopesToSubscribe)
     settings.put(ZeroMQSourceConnectorConfig.kafkaTopicConf, kafkaTopic)
 
     val config = new ZeroMQSourceConnectorConfig(settings)

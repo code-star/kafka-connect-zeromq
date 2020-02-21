@@ -11,7 +11,7 @@ class ZeroMQSourceTask extends SourceTask with StrictLogging {
 
   override def version(): String = getClass.getPackage.getImplementationVersion
 
-  private var poller: Option[ZeroMQSourceTaskPoller] = None
+  private var poller: Option[ZeroMQSourceTaskPoller] = _
 
   override def start(settings: util.Map[String, String]): Unit = {
     logger.info("Start task")

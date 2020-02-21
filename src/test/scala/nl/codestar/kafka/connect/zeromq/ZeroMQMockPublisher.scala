@@ -11,11 +11,14 @@ class ZeroMQMockPublisher extends Runnable with StrictLogging {
   private val url = TestData.publisherUrl
   publisher.bind(url)
 
-  def publishAll(timeoutMillis: Long = 5000, publishInterval: Long = 50): Unit = {
+  private val timeoutDefault = 5000L
+  private val publishIntervalDefault = 50L
+
+  def publishAll(timeoutMillis: Long = timeoutDefault, publishInterval: Long = publishIntervalDefault): Unit = {
     var timer = 0L
     while (timer <= timeoutMillis) {
       for {
-        envelope <- TestData.Test1.envelopes
+        envelope <- TestData.Test1.allEnvelopes
         msg = s"[$timer] We inaugurate the evening / Just drumming up a little weirdness"
       } {
         publisher.send(envelope.getBytes(), ZMQ.SNDMORE)

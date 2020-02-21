@@ -8,7 +8,6 @@ import org.apache.kafka.connect.source.SourceRecord
 import org.apache.kafka.connect.storage.OffsetStorageReader
 import org.zeromq.{ZMQ, ZMsg}
 
-import scala.collection.JavaConverters._
 import scala.collection.immutable.Queue
 
 class ZeroMQSourceTaskPoller
@@ -17,9 +16,9 @@ class ZeroMQSourceTaskPoller
   offsetStorage: OffsetStorageReader,
 ) extends StrictLogging {
 
-  private val url = config.getString(ZeroMQSourceConnectorConfig.urlConf)
-  private val envelopes = config.getList(ZeroMQSourceConnectorConfig.envelopesConf).asScala
-  private val nrIoThreads = config.getInt(ZeroMQSourceConnectorConfig.nrIoThreadsConf)
+  private val url = config.url
+  private val envelopes = config.envelopesList
+  private val nrIoThreads = config.nrIoThreads
 
   private val zmqContext = ZMQ.context(nrIoThreads)
   private val zmqConnection = zmqContext.socket(ZMQ.SUB)
@@ -32,11 +31,12 @@ class ZeroMQSourceTaskPoller
     zmqContext.close()
   }
 
-  private val pollDuration: Duration = Duration.parse(config.getString(ZeroMQSourceConnectorConfig.pollIntervalConf))
-  private val maxBackoff: Duration = Duration.parse(config.getString(ZeroMQSourceConnectorConfig.maxBackoffConf))
+  private val pollDuration: Duration = Duration.parse(config.pollInterval)
+  private val maxBackoff: Duration = Duration.parse(config.maxBackoff)
   private var backoff = new ExponentialBackOff(pollDuration, maxBackoff)
 
   private var buffer = Queue.empty[SourceRecord]
+  private val sleppingTime = 1000L
 
   def poll(): Seq[SourceRecord] = {
     logger.info("polling...")
@@ -55,7 +55,7 @@ class ZeroMQSourceTaskPoller
       receiveAllAvailable()
     } else if (sleepingCounter < 5) {
       logger.info(s"sleeping")
-      Thread sleep 1000
+      Thread sleep sleppingTime
       fetchRecords(sleepingCounter + 1)
     } else {
       logger.info("sleep timeout")

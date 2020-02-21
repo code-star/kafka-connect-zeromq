@@ -23,26 +23,23 @@ class ZeroMQSourceTaskTest
   Mockito.when(context.offsetStorageReader()).thenReturn(offsetStorageReader)
   Mockito.when(offsetStorageReader.offset(Matchers.any[util.Map[String,Object]])).thenReturn(null)
 
-  private val url = TestData.Test1.url
-  private val envelopes = TestData.Test1.envelopes.head
-  private val kafkaTopic = TestData.Test1.kafkaTopic
-
   test("One poll") {
     // given
-    val settings = new util.HashMap[String, String]()
-    settings.put(ZeroMQSourceConnectorConfig.urlConf, url)
-    settings.put(ZeroMQSourceConnectorConfig.envelopesConf, envelopes)
-    settings.put(ZeroMQSourceConnectorConfig.kafkaTopicConf, kafkaTopic)
-
     val publisher = new ZeroMQMockPublisher()
     new Thread(publisher).start()
+
+    val settings = TestData.Test1.settings
+    val config = TestData.Test1.config
 
     // when
     task.start(settings)
     val records = task.poll()
 
     // then
-    assert(records.size() === 20)
+    records forEach { record =>
+      assert(record.topic() === TestData.Test1.kafkaTopic)
+    }
+    assert(records.size() <= config.maxPollRecords)
   }
 
 }

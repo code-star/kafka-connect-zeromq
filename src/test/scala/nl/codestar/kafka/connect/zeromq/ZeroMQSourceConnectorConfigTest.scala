@@ -2,8 +2,6 @@ package nl.codestar.kafka.connect.zeromq
 
 import org.scalatest.funsuite.AnyFunSuite
 
-import scala.collection.JavaConverters._
-
 class ZeroMQSourceConnectorConfigTest
   extends AnyFunSuite {
 
@@ -14,10 +12,17 @@ class ZeroMQSourceConnectorConfigTest
     // when
     val config = new ZeroMQSourceConnectorConfig(settings)
 
+    ZeroMQSourceConnectorConfig.definition.defaultValues().get(ZeroMQSourceConnectorConfig.pollIntervalConf)
+
     // then
-    assert(config.getString(ZeroMQSourceConnectorConfig.urlConf) === settings.get(ZeroMQSourceConnectorConfig.urlConf))
-    assert(config.getList(ZeroMQSourceConnectorConfig.envelopesConf).asScala.mkString(",") === settings.get(ZeroMQSourceConnectorConfig.envelopesConf))
-    assert(config.getString(ZeroMQSourceConnectorConfig.kafkaTopicConf) === settings.get(ZeroMQSourceConnectorConfig.kafkaTopicConf))
+    assert(config.url === settings.get(ZeroMQSourceConnectorConfig.urlConf))
+    assert(config.envelopes === settings.get(ZeroMQSourceConnectorConfig.envelopesConf))
+    assert(config.pollInterval === ZeroMQSourceConnectorConfig.getDefaultString(ZeroMQSourceConnectorConfig.pollIntervalConf))
+    assert(config.maxBackoff === ZeroMQSourceConnectorConfig.getDefaultString(ZeroMQSourceConnectorConfig.maxBackoffConf))
+    assert(config.maxPollRecords === ZeroMQSourceConnectorConfig.getDefaultInt(ZeroMQSourceConnectorConfig.maxPollRecordsConf))
+    assert(config.bufferSize === ZeroMQSourceConnectorConfig.getDefaultInt(ZeroMQSourceConnectorConfig.bufferSizeConf))
+    assert(config.nrIoThreads === ZeroMQSourceConnectorConfig.getDefaultInt(ZeroMQSourceConnectorConfig.nrIoThreadsConf))
+    assert(config.kafkaTopic === settings.get(ZeroMQSourceConnectorConfig.kafkaTopicConf))
   }
 
 }

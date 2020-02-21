@@ -5,12 +5,20 @@ import java.util
 import org.apache.kafka.common.config.ConfigDef.{Importance, Type}
 import org.apache.kafka.common.config.{AbstractConfig, ConfigDef}
 
+import scala.collection.JavaConverters._
+
 class ZeroMQSourceConnectorConfig(settings: util.Map[String, String])
   extends AbstractConfig(ZeroMQSourceConnectorConfig.definition, settings) {
 
   def url: String = getString(ZeroMQSourceConnectorConfig.urlConf)
+  def envelopesList: List[String] = getList(ZeroMQSourceConnectorConfig.envelopesConf).asScala.toList
+  def envelopes: String = envelopesList.mkString(",")
+  def pollInterval: String = getString(ZeroMQSourceConnectorConfig.pollIntervalConf)
+  def maxBackoff: String = getString(ZeroMQSourceConnectorConfig.maxBackoffConf)
   def maxPollRecords: Integer = getInt(ZeroMQSourceConnectorConfig.maxPollRecordsConf)
-
+  def bufferSize: Integer = getInt(ZeroMQSourceConnectorConfig.bufferSizeConf)
+  def nrIoThreads: Integer = getInt(ZeroMQSourceConnectorConfig.nrIoThreadsConf)
+  def kafkaTopic: String = getString(ZeroMQSourceConnectorConfig.kafkaTopicConf)
 }
 
 object ZeroMQSourceConnectorConfig {
@@ -33,4 +41,8 @@ object ZeroMQSourceConnectorConfig {
     .define(nrIoThreadsConf, Type.INT, 1, Importance.LOW, "zeromq number of ZeroMQ threads")
     .define(kafkaTopicConf, Type.STRING, Importance.HIGH, "zeromq Kafka topic to write the messages to")
 
+  private def getDefault(keyConf: String): AnyRef = ZeroMQSourceConnectorConfig.definition.defaultValues().get(keyConf)
+  def getDefaultString(keyConf: String): String = getDefault(keyConf).asInstanceOf[String]
+  def getDefaultInt(keyConf: String): Integer = getDefault(keyConf).asInstanceOf[Integer]
+  def getDefaultList(keyConf: String): List[String] = getDefault(keyConf).asInstanceOf[List[String]]
 }

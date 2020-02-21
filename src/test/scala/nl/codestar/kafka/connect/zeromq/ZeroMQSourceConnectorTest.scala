@@ -33,7 +33,7 @@ class ZeroMQSourceConnectorTest
     // then
     assert(taskConfigs.size === 1)
     assert(taskConfigs.get(0).get(ZeroMQSourceConnectorConfig.urlConf) === TestData.Test1.url)
-    assert(taskConfigs.get(0).get(ZeroMQSourceConnectorConfig.envelopesConf) === TestData.Test1.envelopes.mkString(","))
+    assert(taskConfigs.get(0).get(ZeroMQSourceConnectorConfig.envelopesConf) === TestData.Test1.subscribedEnvelopes)
   }
 
 }
