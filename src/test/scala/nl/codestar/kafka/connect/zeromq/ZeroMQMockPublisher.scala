@@ -16,6 +16,7 @@ class ZeroMQMockPublisher extends Runnable with StrictLogging {
 
   def publishAll(timeoutMillis: Long = timeoutDefault, publishInterval: Long = publishIntervalDefault): Unit = {
     var timer = 0L
+    var msgCount = 0
     while (timer <= timeoutMillis) {
       for {
         envelope <- TestData.Test1.allEnvelopes
@@ -23,13 +24,19 @@ class ZeroMQMockPublisher extends Runnable with StrictLogging {
       } {
         publisher.send(envelope.getBytes(), ZMQ.SNDMORE)
         publisher.send(msg.getBytes())
+        msgCount += 1
         logger.info(s"published @ $envelope to $url: $msg")
       }
       Thread.sleep(publishInterval)
       timer += publishInterval
     }
+    logger.info("number of messages published: " + msgCount)
   }
 
   override def run(): Unit = publishAll()
+
+  def close(): Unit = {
+    publisher.close()
+  }
 
 }

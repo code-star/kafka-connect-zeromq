@@ -11,11 +11,13 @@ object TestData {
     val url = s"tcp://localhost:$port"
     val allEnvelopes = Seq("envelope1", "envelope2")
     val subscribedEnvelopes: String = allEnvelopes.head
+    val maxPollRecords = 10
     val kafkaTopic = "kafka-topic-1"
 
     val settings = new util.HashMap[String, String]()
     settings.put(ZeroMQSourceConnectorConfig.urlConf, url)
     settings.put(ZeroMQSourceConnectorConfig.envelopesConf, subscribedEnvelopes)
+    settings.put(ZeroMQSourceConnectorConfig.maxPollRecordsConf, maxPollRecords.toString)
     settings.put(ZeroMQSourceConnectorConfig.kafkaTopicConf, kafkaTopic)
 
     val config = new ZeroMQSourceConnectorConfig(settings)

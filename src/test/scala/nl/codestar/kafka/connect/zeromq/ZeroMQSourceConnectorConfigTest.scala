@@ -19,7 +19,7 @@ class ZeroMQSourceConnectorConfigTest
     assert(config.envelopes === settings.get(ZeroMQSourceConnectorConfig.envelopesConf))
     assert(config.pollInterval === ZeroMQSourceConnectorConfig.getDefaultString(ZeroMQSourceConnectorConfig.pollIntervalConf))
     assert(config.maxBackoff === ZeroMQSourceConnectorConfig.getDefaultString(ZeroMQSourceConnectorConfig.maxBackoffConf))
-    assert(config.maxPollRecords === ZeroMQSourceConnectorConfig.getDefaultInt(ZeroMQSourceConnectorConfig.maxPollRecordsConf))
+    assert(config.maxPollRecords === settings.get(ZeroMQSourceConnectorConfig.maxPollRecordsConf).toInt)
     assert(config.bufferSize === ZeroMQSourceConnectorConfig.getDefaultInt(ZeroMQSourceConnectorConfig.bufferSizeConf))
     assert(config.nrIoThreads === ZeroMQSourceConnectorConfig.getDefaultInt(ZeroMQSourceConnectorConfig.nrIoThreadsConf))
     assert(config.kafkaTopic === settings.get(ZeroMQSourceConnectorConfig.kafkaTopicConf))

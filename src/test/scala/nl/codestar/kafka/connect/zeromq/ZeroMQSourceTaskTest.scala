@@ -40,6 +40,9 @@ class ZeroMQSourceTaskTest
       assert(record.topic() === TestData.Test1.kafkaTopic)
     }
     assert(records.size() <= config.maxPollRecords)
+
+    // finally
+    publisher.close()
   }
 
 }
