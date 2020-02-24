@@ -8,7 +8,7 @@ import org.apache.kafka.connect.source.SourceRecord
 import org.apache.kafka.connect.storage.OffsetStorageReader
 import org.zeromq.{ZMQ, ZMsg}
 
-import scala.collection.immutable.Queue
+import scala.collection.mutable
 
 class ZeroMQSourceTaskPoller
 (
@@ -16,15 +16,11 @@ class ZeroMQSourceTaskPoller
   offsetStorage: OffsetStorageReader,
 ) extends StrictLogging {
 
-  private val url = config.url
-  private val envelopes = config.envelopesList
-  private val nrIoThreads = config.nrIoThreads
-
-  private val zmqContext = ZMQ.context(nrIoThreads)
+  private val zmqContext = ZMQ.context(config.nrIoThreads)
   private val zmqConnection = zmqContext.socket(ZMQ.SUB)
 
-  zmqConnection connect url
-  envelopes.map(_.getBytes) foreach zmqConnection.subscribe
+  zmqConnection connect config.url
+  config.envelopesList map (_.getBytes) foreach zmqConnection.subscribe
 
   def close(): Unit = {
     zmqConnection.close()
@@ -35,16 +31,18 @@ class ZeroMQSourceTaskPoller
   private val maxBackoff: Duration = Duration.parse(config.maxBackoff)
   private var backoff = new ExponentialBackOff(pollDuration, maxBackoff)
 
-  private var buffer = Queue.empty[SourceRecord]
+  private val buffer = mutable.Queue.empty[SourceRecord]
   private val sleppingTime = 1000L
+  private val maxSleepingTimes = 5
 
   def poll(): Seq[SourceRecord] = {
     logger.info("polling...")
-    val batch = fetchRecords()
-    logger.info(s"got ${batch.size} records")
-    buffer ++= batch
-    val (left, right) = buffer splitAt config.maxPollRecords
-    buffer = right
+    buffer ++= fetchRecords()
+
+    var left = Seq.empty[SourceRecord]
+    while (buffer.nonEmpty && left.size < config.maxPollRecords) {
+      left +:= buffer.dequeue()
+    }
     left
   }
 
@@ -52,8 +50,14 @@ class ZeroMQSourceTaskPoller
   private def fetchRecords(sleepingCounter: Int = 0): Seq[SourceRecord] =
     if (backoff.passed) {
       logger.info("fetching records...")
-      receiveAllAvailable()
-    } else if (sleepingCounter < 5) {
+      val records = Stream.continually(receiveOne()).takeWhile(_.isDefined).flatten
+      logger.info(s"got ${records.size} records")
+      if (records.isEmpty) {
+        backoff = backoff.nextFailure()
+        logger.info(s"let's backoff ${backoff.remaining}")
+      }
+      records
+    } else if (sleepingCounter < maxSleepingTimes) {
       logger.info(s"sleeping")
       Thread sleep sleppingTime
       fetchRecords(sleepingCounter + 1)
@@ -62,23 +66,12 @@ class ZeroMQSourceTaskPoller
       Seq.empty
     }
 
-  @scala.annotation.tailrec
-  private def receiveAllAvailable(records: Seq[SourceRecord] = Seq.empty): Seq[SourceRecord] =
-    receiveOne() match {
-      case None =>
-        backoff = backoff.nextFailure()
-        logger.info(s"let's backoff ${backoff.remaining}")
-        records.reverse
-      case Some(record) =>
-        receiveAllAvailable(record +: records)
-    }
-
   private def receiveOne(): Option[SourceRecord] =
     for {
       msg <- Option(ZMsg.recvMsg(zmqConnection, ZMQ.DONTWAIT | ZMQ.NOBLOCK))
-      _ = logger.info(s"received msg: ${msg.toString}")
       record = ZeroMQSourceRecord.from(config, msg)
     } yield {
+      logger.info(s"received msg: ${msg.toString}")
       backoff = backoff.nextSuccess()
       record
     }
