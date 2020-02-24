@@ -29,7 +29,7 @@ class ZeroMQSourceTaskPoller
 
   private val pollDuration: Duration = Duration.parse(config.pollInterval)
   private val maxBackoff: Duration = Duration.parse(config.maxBackoff)
-  private var backoff = new ExponentialBackOff(pollDuration, maxBackoff)
+  private val backoff = new ExponentialBackOff(pollDuration, maxBackoff)
 
   private val buffer = mutable.Queue.empty[SourceRecord]
   private val sleppingTime = 1000L
@@ -53,7 +53,7 @@ class ZeroMQSourceTaskPoller
       val records = Stream.continually(receiveOne()).takeWhile(_.isDefined).flatten
       logger.info(s"got ${records.size} records")
       if (records.isEmpty) {
-        backoff = backoff.nextFailure()
+        backoff.markFailure()
         logger.info(s"let's backoff ${backoff.remaining}")
       }
       records
@@ -72,7 +72,7 @@ class ZeroMQSourceTaskPoller
       record = ZeroMQSourceRecord.from(config, msg)
     } yield {
       logger.info(s"received msg: ${msg.toString}")
-      backoff = backoff.nextSuccess()
+      backoff.reset()
       record
     }
 

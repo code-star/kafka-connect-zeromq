@@ -1,11 +1,13 @@
 package nl.codestar.kafka.connect.zeromq.utils
 
 import java.time.{Duration, Instant}
+import java.util.concurrent.atomic.AtomicInteger
 
-// TODO: make it concurrent
-class ExponentialBackOff(step: Duration, cap: Duration, iteration: Int = 0) {
+class ExponentialBackOff(step: Duration, cap: Duration) {
 
-  private val endTime: Instant = Instant.now.plus(interval(iteration))
+  private val iteration: AtomicInteger = new AtomicInteger(0)
+
+  private val endTime: Instant = Instant.now.plus(interval(iteration.get()))
 
   private def interval(i: Int): Duration = Duration.ofMillis(
     Math.min(
@@ -18,8 +20,8 @@ class ExponentialBackOff(step: Duration, cap: Duration, iteration: Int = 0) {
 
   def passed: Boolean = Instant.now isAfter endTime
 
-  def nextSuccess(): ExponentialBackOff = new ExponentialBackOff(step, cap)
+  def reset(): Unit = iteration.set(0)
 
-  def nextFailure(): ExponentialBackOff = new ExponentialBackOff(step, cap, iteration + 1)
+  def markFailure(): Int = iteration.incrementAndGet()
 
 }
