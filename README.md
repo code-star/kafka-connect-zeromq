@@ -51,7 +51,7 @@ Start Zookeeper, Kafka, Kafka Connect, etc:
 
 Check that all containers are running and started, specially the `connect` service:
 
-    docker-compose -f example/docker-compose.yml logs connect | grep "Kafka Connect started"
+    ./example/wait-for-service.sh
 
 check that our connector is listed as available to the `connect` service: 
 
