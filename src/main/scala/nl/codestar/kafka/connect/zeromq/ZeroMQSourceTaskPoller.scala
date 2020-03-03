@@ -37,7 +37,7 @@ class ZeroMQSourceTaskPoller
   private val sleepingTime = pollDuration.toMillis
 
   def poll(): Seq[SourceRecord] = {
-    logger.info("polling...")
+    logger.debug("polling...")
     buffer ++= fetchRecords()
 
     var left = Seq.empty[SourceRecord]
@@ -70,7 +70,7 @@ class ZeroMQSourceTaskPoller
       zmsg <- Option(ZMsg.recvMsg(zmqConnection, ZMQ.DONTWAIT | ZMQ.NOBLOCK))
       record = ZeroMQSourceRecord.from(config, zmsg)
     } yield {
-      logger.info(s"received msg: ${msg.toString}")
+      logger.debug(s"received record: ${record.toString}")
       backoff.reset()
       record
     }

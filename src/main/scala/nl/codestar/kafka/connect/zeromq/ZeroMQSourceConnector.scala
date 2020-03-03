@@ -22,7 +22,7 @@ class ZeroMQSourceConnector extends SourceConnector with StrictLogging {
   private var maybeSettings: Option[util.Map[String, String]] = None
 
   override def start(settings: util.Map[String, String]): Unit = {
-    logger.info("Start connector")
+    logger.debug("Start connector")
     maybeSettings = Some(settings)
     Try(new ZeroMQSourceConnectorConfig(settings)) match {
       case Failure(f) => throw new ConnectException("Couldn't start due to configuration error: " + f.getMessage, f)
@@ -31,11 +31,11 @@ class ZeroMQSourceConnector extends SourceConnector with StrictLogging {
   }
 
   override def stop(): Unit =
-    logger.info("Stop connector")
+    logger.debug("Stop connector")
 
   // TODO: define if more than one task is necessary; for the moment only one task maximum
   override def taskConfigs(maxTasks: Int): util.List[util.Map[String, String]] = {
-    logger.info(s"Setting task configurations for $maxTasks workers")
+    logger.debug(s"Setting task configurations for $maxTasks workers")
     assert(maxTasks >= 0)
     assert(maybeSettings.isDefined, "Connector is not initialized: cannot start tasks")
 
