@@ -9,15 +9,17 @@ import org.apache.kafka.connect.storage.OffsetStorageReader
 import org.zeromq.{ZMQ, ZMsg}
 
 import scala.collection.mutable
+import scala.util.Try
 
 class ZeroMQSourceTaskPoller
 (
   config: ZeroMQSourceConnectorConfig,
   offsetStorage: OffsetStorageReader,
+  socketType: Int = ZMQ.SUB,
 ) extends StrictLogging {
 
   private val zmqContext = ZMQ.context(config.nrIoThreads)
-  private val zmqConnection = zmqContext.socket(ZMQ.SUB)
+  private val zmqConnection = zmqContext.socket(socketType)
 
   zmqConnection connect config.url
   config.envelopesList map (_.getBytes) foreach zmqConnection.subscribe
@@ -32,8 +34,7 @@ class ZeroMQSourceTaskPoller
   private val backoff = new ExponentialBackOff(pollDuration, maxBackoff)
 
   private val buffer = mutable.Queue.empty[SourceRecord]
-  private val sleppingTime = 1000L
-  private val maxSleepingTimes = 5
+  private val sleepingTime = pollDuration.toMillis
 
   def poll(): Seq[SourceRecord] = {
     logger.info("polling...")
@@ -46,30 +47,28 @@ class ZeroMQSourceTaskPoller
     left
   }
 
-  @scala.annotation.tailrec
   private def fetchRecords(sleepingCounter: Int = 0): Seq[SourceRecord] =
-    if (backoff.passed) {
-      logger.info("fetching records...")
+    if (backoff.hasPassed) {
+      logger.debug("fetching records...")
       val records = Stream.continually(receiveOne()).takeWhile(_.isDefined).flatten
-      logger.info(s"got ${records.size} records")
+      logger.info(s"received ${records.size} records")
       if (records.isEmpty) {
-        backoff.markFailure()
-        logger.info(s"let's backoff ${backoff.remaining}")
+        backoff.backoff()
+        val delta = Try{backoff.remaining.toMillis}.toOption.getOrElse(0L)
+        if (delta > 0L)
+          logger.info(s"let's wait ${delta}ms until next poll")
       }
       records
-    } else if (sleepingCounter < maxSleepingTimes) {
-      logger.info(s"sleeping")
-      Thread sleep sleppingTime
-      fetchRecords(sleepingCounter + 1)
     } else {
-      logger.info("sleep timeout")
+      logger.debug(s"waiting $sleepingTime ms for next poll")
+      Thread sleep sleepingTime
       Seq.empty
     }
 
   private def receiveOne(): Option[SourceRecord] =
     for {
-      msg <- Option(ZMsg.recvMsg(zmqConnection, ZMQ.DONTWAIT | ZMQ.NOBLOCK))
-      record = ZeroMQSourceRecord.from(config, msg)
+      zmsg <- Option(ZMsg.recvMsg(zmqConnection, ZMQ.DONTWAIT | ZMQ.NOBLOCK))
+      record = ZeroMQSourceRecord.from(config, zmsg)
     } yield {
       logger.info(s"received msg: ${msg.toString}")
       backoff.reset()

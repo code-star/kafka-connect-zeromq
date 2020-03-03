@@ -5,9 +5,9 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class ExponentialBackOff(step: Duration, cap: Duration) {
 
-  private val iteration: AtomicInteger = new AtomicInteger(0)
+  private var initTime = Instant.now
 
-  private val endTime: Instant = Instant.now.plus(interval(iteration.get()))
+  private val iteration: AtomicInteger = new AtomicInteger(0)
 
   private def interval(i: Int): Duration = Duration.ofMillis(
     Math.min(
@@ -16,12 +16,17 @@ class ExponentialBackOff(step: Duration, cap: Duration) {
     )
   )
 
-  def remaining: Duration = Duration.between(Instant.now, endTime)
+  def endTime(): Instant = initTime plus interval(iteration.get())
 
-  def passed: Boolean = Instant.now isAfter endTime
+  def hasPassed: Boolean = Instant.now isAfter endTime()
 
-  def reset(): Unit = iteration.set(0)
+  def reset(): Unit = synchronized {
+    initTime = Instant.now
+    iteration.set(0)
+  }
 
-  def markFailure(): Int = iteration.incrementAndGet()
+  def backoff(): Int = iteration.incrementAndGet()
+
+  def remaining: Duration = Duration.between(Instant.now, endTime())
 
 }
