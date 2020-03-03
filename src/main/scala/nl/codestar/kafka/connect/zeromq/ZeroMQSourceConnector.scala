@@ -33,18 +33,18 @@ class ZeroMQSourceConnector extends SourceConnector with StrictLogging {
   override def stop(): Unit =
     logger.debug("Stop connector")
 
-  // TODO: define if more than one task is necessary; for the moment only one task maximum
+  // Note that only one task maximum is used.
   override def taskConfigs(maxTasks: Int): util.List[util.Map[String, String]] = {
     logger.debug(s"Setting task configurations for $maxTasks workers")
     assert(maxTasks >= 0)
     assert(maybeSettings.isDefined, "Connector is not initialized: cannot start tasks")
 
-    val tasks = for {
+    val taskSettings = for {
       settings <- maybeSettings.toList
       _ <- 1 to Math.max(maxTasks, 1)
     } yield settings
 
-    tasks.asJava
+    taskSettings.asJava
   }
 
 }

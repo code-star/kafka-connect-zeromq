@@ -16,7 +16,6 @@ class ZeroMQSourceConnectorConfig(settings: util.Map[String, String])
   def pollInterval: String = getString(ZeroMQSourceConnectorConfig.pollIntervalConf)
   def maxBackoff: String = getString(ZeroMQSourceConnectorConfig.maxBackoffConf)
   def maxPollRecords: Integer = getInt(ZeroMQSourceConnectorConfig.maxPollRecordsConf)
-  def bufferSize: Integer = getInt(ZeroMQSourceConnectorConfig.bufferSizeConf)
   def nrIoThreads: Integer = getInt(ZeroMQSourceConnectorConfig.nrIoThreadsConf)
   def kafkaTopic: String = getString(ZeroMQSourceConnectorConfig.kafkaTopicConf)
 }
@@ -27,17 +26,15 @@ object ZeroMQSourceConnectorConfig {
   val pollIntervalConf = "zeromq.pollInterval"
   val maxBackoffConf = "zeromq.maxBackoff"
   val maxPollRecordsConf = "zeromq.maxPollRecords"
-  val bufferSizeConf = "zeromq.bufferSize"
   val nrIoThreadsConf = "zeromq.nrIoThreads"
   val kafkaTopicConf = "zeromq.kafka.topic"
 
   val definition: ConfigDef = new ConfigDef()
     .define(urlConf, Type.STRING, Importance.HIGH, "zeromq url")
     .define(envelopesConf, Type.LIST, Importance.HIGH, "zeromq list of envelopes")
-    .define(pollIntervalConf, Type.STRING, "PT0.1S", Importance.MEDIUM, "how often the zeromq source is polled; ISO8601 duration")
-    .define(maxBackoffConf, Type.STRING,"PT5S", Importance.MEDIUM, "on failure, exponentially backoff to at most this ISO8601 duration")
+    .define(pollIntervalConf, Type.STRING, "PT1S", Importance.MEDIUM, "how often the zeromq source is polled; ISO8601 duration")
+    .define(maxBackoffConf, Type.STRING,"PT60S", Importance.MEDIUM, "on failure, exponentially backoff to at most this ISO8601 duration")
     .define(maxPollRecordsConf, Type.INT, 1000, Importance.MEDIUM, "maximum number of records returned per poll")
-    .define(bufferSizeConf, Type.INT, 5000, Importance.MEDIUM, "zeromq bufferSize")
     .define(nrIoThreadsConf, Type.INT, 1, Importance.LOW, "zeromq number of ZeroMQ threads")
     .define(kafkaTopicConf, Type.STRING, Importance.HIGH, "zeromq Kafka topic to write the messages to")
 
