@@ -3,7 +3,8 @@ package nl.codestar.kafka.connect.zeromq
 import com.typesafe.scalalogging.StrictLogging
 import org.zeromq.ZMQ
 
-class ZeroMQMockPublisher extends Runnable with StrictLogging {
+class ZeroMQMockPublisher(timeoutMillisDefault: Long = 10000L, publishIntervalDefault: Long = 50L)
+  extends Runnable with StrictLogging {
 
   val context: ZMQ.Context = ZMQ.context(1)
   val publisher: ZMQ.Socket = context.socket(ZMQ.PUB)
@@ -11,10 +12,7 @@ class ZeroMQMockPublisher extends Runnable with StrictLogging {
   private val url = TestData.publisherUrl
   publisher.bind(url)
 
-  private val timeoutDefault = 5000L
-  private val publishIntervalDefault = 50L
-
-  def publishAll(timeoutMillis: Long = timeoutDefault, publishInterval: Long = publishIntervalDefault): Unit = {
+  def publishAll(timeoutMillis: Long = timeoutMillisDefault, publishInterval: Long = publishIntervalDefault): Unit = {
     var timer = 0L
     var msgCount = 0
     while (timer <= timeoutMillis) {
