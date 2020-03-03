@@ -1,0 +1,18 @@
+{
+  "name": "zeromq-source",
+  "config": {
+    "connector.class": "nl.codestar.kafka.connect.zeromq.ZeroMQSourceConnector",
+    "tasks.max": 1,
+
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "max.interval": 10000,
+    "iterations": 1000000,
+
+    "zeromq.url": "tcp://pubsub.besteffort.ndovloket.nl:7664",
+    "zeromq.envelopes": "/RIG/NStreinpositiesInterface5",
+    "zeromq.pollInterval": "PT1S",
+    "zeromq.maxBackoff": "PT60S",
+    "zeromq.kafka.topic": "kafka-topic-1"
+  }
+}
