@@ -28,28 +28,28 @@ Configuration
 
 In addition to the default configuration for Kafka connectors (e.g. `name`, `connector.class`, etc.) the following options are available:
 
-| name                     | data type       | required | default | description                                                  |
-|:-------------------------|:----------------|:---------|:--------|:-------------------------------------------------------------|
-| `zeromq.address`         | string          | yes      |         | ZeroMQ server address                                        |
-| `zeromq.envelopes`       | list of strings | yes      |         | comma separated list of envelopes to subscribe               |
-| `zeromq.pollInterval`    | string          | yes      |    PT1S | how often the ZeroMQ source is polled; ISO8601 duration      |
-| `zeromq.maxBackoff`      | string          | yes      |   PT60S | on failure, exponentially backoff time cap; ISO8601 duration |
-| `zeromq.maxPollRecords`  | integer         | yes      |    1000 | maximum number of records returned per poll                  |
-| `zeromq.nrIoThreads`     | integer         | no       |       1 | number of ZeroMQ threads                                     |
-| `zeromq.kafka.topic`     | string          | yes      |         | Kafka topic to write the messages to                         |
+| name                     | data type       | required | default | description                                                   |
+|:-------------------------|:----------------|:---------|:--------|:--------------------------------------------------------------|
+| `zeromq.address`         | string          | yes      |         | ZeroMQ server address                                         |
+| `zeromq.envelopes`       | list of strings | yes      |         | comma separated list of envelopes to subscribe                |
+| `zeromq.pollInterval`    | string          | yes      |    PT1S | how often the ZeroMQ source is polled; in ISO8601 format      |
+| `zeromq.maxBackoff`      | string          | yes      |   PT60S | on failure, exponentially backoff time cap; in ISO8601 format |
+| `zeromq.maxPollRecords`  | integer         | yes      |    1000 | maximum number of records returned per poll                   |
+| `zeromq.nrIoThreads`     | integer         | no       |       1 | number of ZeroMQ threads                                      |
+| `zeromq.kafka.topic`     | string          | yes      |         | Kafka topic to write the messages to                          |
 
 For an example, see [this config file](example/zeromq-source-config.ndovloket-example.json).
 
-How to use (in distributed mode)
---------------------------------
+How to use
+----------
 
-The following example will use the ZeroMQ connector for fetching NS train locations records.
+The following example in distributed mode will use the ZeroMQ connector for fetching NS train locations records.
 
 Start Zookeeper, Kafka, Kafka Connect, etc:
 
     ./example/start.sh
 
-Check that all containers are running, specially the connect service:
+Check that all containers are running and started, specially the `connect` service:
 
     docker-compose -f example/docker-compose.yml logs connect | grep "Kafka Connect started"
 
@@ -57,13 +57,17 @@ check that our connector is listed as available to the `connect` service:
 
     curl localhost:8083/connector-plugins | jq
 
-and then add the connector's configuration with the Kafka Connect REST API:
+and then add the connector by posting a configuration to the Kafka Connect REST API:
 
-    curl -s -X POST -H 'Content-Type: application/json' --data @example/zeromq-source-config.ndovloket-example.json http://localhost:8083/connectors | jq
+    curl -s -X POST -H 'Content-Type: application/json' \
+        --data @example/zeromq-source-config.ndovloket-example.json \
+        http://localhost:8083/connectors | jq
 
 To check that the connector is running, we can try to consume some messages:
 
-    docker-compose -f example/docker-compose.yml exec connect kafka-console-consumer --topic kafka-topic-1 --bootstrap-server kafka-broker-0:19092  --property print.key=true --max-messages 5
+    docker-compose -f example/docker-compose.yml exec connect kafka-console-consumer \
+        --topic kafka-topic-1 --bootstrap-server kafka-broker-0:19092 \
+        --property print.key=true --max-messages 5
 
 or we can verify the `connect` service logs:
 
