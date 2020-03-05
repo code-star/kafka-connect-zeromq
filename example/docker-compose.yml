@@ -74,9 +74,7 @@ services:
       KAFKA_REST_HOST_NAME: 'localhost'
 
   connect:
-    image: codestar/kafka-connect-zeromq:0.1
-    build:
-      context: .
+    image: confluentinc/cp-kafka-connect-base:5.4.0
     volumes:
       - ../build/libs:/etc/kafka-connect/jars
     hostname: connect
