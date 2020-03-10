@@ -16,7 +16,7 @@ if [ ! -f "$LIBS/$JARFILE" ]; then
     exit 1
 fi
 
-echo "== Compressing fat jar into $LIBS/$ZIPFILE"
+echo "== Compressing fat jar into $LIBS/$ZIPFILE (required by Dockerfile)"
 zip $LIBS/$ZIPFILE $LIBS/$JARFILE
 
 if [ ! -f "$LIBS/$ZIPFILE" ]; then

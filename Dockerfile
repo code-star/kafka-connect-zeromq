@@ -5,7 +5,7 @@ FROM $BASE_PREFIX/$CONNECT_IMAGE:$CP_VERSION
 
 # In docker-compose, add CONNECT_PLUGIN_PATH: "/etc/kafka-connect/jars", or:
 ARG IMAGE_DIR=/etc/kafka-connect/jars
-ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components,${IMAGE_DIRS}"
+#ENV CONNECT_PLUGIN_PATH="/usr/share/java,/usr/share/confluent-hub-components,${IMAGE_DIR}"
 
 ARG COMPONENT_OWNER=codestar
 ARG COMPONENT_NAME=kafka-connect-zeromq
