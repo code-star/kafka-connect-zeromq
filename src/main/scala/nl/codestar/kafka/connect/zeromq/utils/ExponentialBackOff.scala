@@ -5,23 +5,25 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class ExponentialBackOff(step: Duration, cap: Duration) {
 
-  private var initTime = Instant.now
+  private var initTime = Instant.now.toEpochMilli
 
   private val iteration: AtomicInteger = new AtomicInteger(0)
 
-  private def interval(i: Int): Duration = Duration.ofMillis(
-    Math.min(
-      cap.toMillis,
-      step.toMillis * Math.pow(2, i).toLong
-    )
-  )
+  private def interval(i: Int): Long = {
+    val d = BigInt(step.toMillis) * BigInt(2).pow(i)
+    scala.math.min(cap.toMillis, if (d.isValidLong) d.toLong else Long.MaxValue)
+  }
 
-  def endTime(): Instant = initTime plus interval(iteration.get())
+  def endTime(): Long = initTime + interval(iteration.get())
 
-  def hasPassed: Boolean = Instant.now isAfter endTime()
+  def remainingMillis: Long = endTime() - Instant.now.toEpochMilli
 
-  def reset(): Unit = synchronized {
-    initTime = Instant.now
+  def resetInit(): Unit = synchronized {
+    initTime = Instant.now.toEpochMilli
+  }
+
+  def resetAll(): Unit = synchronized {
+    resetInit()
     iteration.set(0)
   }
 

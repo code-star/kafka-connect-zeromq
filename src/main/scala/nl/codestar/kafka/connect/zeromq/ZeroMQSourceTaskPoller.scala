@@ -9,7 +9,6 @@ import org.apache.kafka.connect.storage.OffsetStorageReader
 import org.zeromq.{ZMQ, ZMsg}
 
 import scala.collection.mutable
-import scala.util.Try
 
 class ZeroMQSourceTaskPoller
 (
@@ -34,7 +33,6 @@ class ZeroMQSourceTaskPoller
   private val backoff = new ExponentialBackOff(pollDuration, maxBackoff)
 
   private val buffer = mutable.Queue.empty[SourceRecord]
-  private val sleepingTime = pollDuration.toMillis
 
   def poll(): Seq[SourceRecord] = {
     logger.debug("polling...")
@@ -47,21 +45,22 @@ class ZeroMQSourceTaskPoller
     left
   }
 
-  private def fetchRecords(sleepingCounter: Int = 0): Seq[SourceRecord] =
-    if (backoff.hasPassed) {
+  private def fetchRecords(): Seq[SourceRecord] =
+    if (backoff.remainingMillis < 0) {
+      backoff.resetInit()
       logger.debug("fetching records...")
       val records = Stream.continually(receiveOne()).takeWhile(_.isDefined).flatten
       logger.info(s"received ${records.size} records")
       if (records.isEmpty) {
         backoff.backoff()
-        val delta = Try{backoff.remaining.toMillis}.toOption.getOrElse(0L)
-        if (delta > 0L)
-          logger.info(s"let's wait ${delta}ms until next poll")
+      } else {
+        records.foreach(r => logger.debug(s"received: ${r.toString}"))
+        backoff.resetAll()
       }
       records
     } else {
-      logger.debug(s"waiting $sleepingTime ms for next poll")
-      Thread sleep sleepingTime
+      logger.info(s"let's wait ${backoff.remainingMillis}ms for next poll")
+      Thread sleep backoff.remainingMillis
       Seq.empty
     }
 
@@ -69,10 +68,6 @@ class ZeroMQSourceTaskPoller
     for {
       zmsg <- Option(ZMsg.recvMsg(zmqConnection, ZMQ.DONTWAIT | ZMQ.NOBLOCK))
       record = ZeroMQSourceRecord.from(config, zmsg)
-    } yield {
-      logger.debug(s"received record: ${record.toString}")
-      backoff.reset()
-      record
-    }
+    } yield record
 
 }
