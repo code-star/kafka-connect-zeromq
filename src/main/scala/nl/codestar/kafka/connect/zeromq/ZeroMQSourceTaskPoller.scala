@@ -9,6 +9,7 @@ import org.apache.kafka.connect.storage.OffsetStorageReader
 import org.zeromq.{ZMQ, ZMsg}
 
 import scala.collection.mutable
+import scala.util.Try
 
 class ZeroMQSourceTaskPoller
 (
@@ -49,8 +50,15 @@ class ZeroMQSourceTaskPoller
     if (backoff.remainingMillis < 0) {
       backoff.resetInit()
       logger.debug("fetching records...")
-      val records = Stream.continually(receiveOne()).takeWhile(_.isDefined).flatten
-      logger.info(s"received ${records.size} records")
+      val records = Stream
+        .continually(receiveOne())
+        .takeWhile(_.isDefined)
+        .flatten
+      val recordTypesCount = records
+        .groupBy(_.key().asInstanceOf[String])
+        .mapValues(_.size)
+        .toSeq.sortBy{ case (typ,_) => typ }
+      logger.info(s"received ${records.size} records (${recordTypesCount.map{case (t,c) => s"$c $t"}.mkString(", ")})")
       if (records.isEmpty) {
         backoff.backoff()
       } else {
@@ -59,8 +67,8 @@ class ZeroMQSourceTaskPoller
       }
       records
     } else {
-      logger.info(s"let's wait ${backoff.remainingMillis}ms for next poll")
-      Thread sleep backoff.remainingMillis
+      logger.debug(s"let's wait ${backoff.remainingMillis}ms for next poll")
+      val _ = Try(Thread sleep backoff.remainingMillis)
       Seq.empty
     }
 
