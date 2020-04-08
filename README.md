@@ -9,7 +9,6 @@ Requirements
 ------------
 
 - Java 8
-- Gradle 6.2
 - Docker 19
 
 Installation
@@ -22,6 +21,12 @@ Build the source code, and then build and deploy locally the Docker image with:
 You can check that the Docker image is installed with:
 
     docker images | grep zeromq 
+
+There are two ways to installing a Kafka Connect plugin. 
+The first is to build a single uber JAR containing all of the classfiles for the plugin and its third-party dependencies. 
+The second is to create a directory on the file system that contains the JAR files for the plugin and its third-party dependencies
+(See [Create a Docker Image containing Local Connectors](https://docs.confluent.io/current/connect/managing/extending.html#create-a-docker-image-containing-local-connectors)).
+Our `deploy.sh` script applies the first one.
 
 Configuration
 -------------
@@ -38,7 +43,7 @@ In addition to the default configuration for Kafka connectors (e.g. `name`, `con
 | `zeromq.nrIoThreads`     | integer         | no       |       1 | number of ZeroMQ threads                                      |
 | `zeromq.kafka.topic`     | string          | yes      |         | Kafka topic to write the messages to                          |
 
-For an example, see [this config file](example/zeromq-source-config.ndovloket-example.json).
+For an example, see [this config file](example/config/zeromq-source.config-example.json).
 
 How to use
 ----------
@@ -65,9 +70,7 @@ and then add the connector by posting a configuration to the Kafka Connect REST 
 
 To check that the connector is running, we can try to consume some messages:
 
-    docker-compose -f example/docker-compose.yml exec connect kafka-console-consumer \
-        --topic kafka-topic-1 --bootstrap-server kafka-broker-0:19092 \
-        --property print.key=true --max-messages 5
+    ./example/consume.sh
 
 or we can verify the `connect` service logs:
 
@@ -82,6 +85,11 @@ To access it, navigate to the host and port where it’s running
 Finally, stop all running services with:
 
     ./example/stop.sh
+
+Authors
+-------
+
+- Hernán Vanzetto (https://github.com/hvanz)
 
 TODO
 ----
