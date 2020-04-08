@@ -29,6 +29,4 @@ class ExponentialBackOff(step: Duration, cap: Duration) {
 
   def backoff(): Int = iteration.incrementAndGet()
 
-  def remaining: Duration = Duration.between(Instant.now, endTime())
-
 }

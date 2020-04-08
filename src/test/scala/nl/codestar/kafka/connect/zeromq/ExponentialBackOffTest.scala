@@ -37,7 +37,7 @@ class ExponentialBackOffTest extends AnyFunSuite with StrictLogging {
 
     Thread.sleep(step.toMillis)
     // now >= t0 + step, end: t0 + step
-    assert(backoff.remainingMillis < 0 || backoff.endTime() === (t0 plus step))
+    assert(backoff.remainingMillis < 0 || backoff.endTime() === (t0 plus step).toEpochMilli)
 
     backoff.backoff()
     // now >= t0 + step, end: t0 + step * 2
@@ -62,7 +62,7 @@ class ExponentialBackOffTest extends AnyFunSuite with StrictLogging {
 
     Thread.sleep(step.toMillis)
     // now >= t1 + step, end: t1 + step
-    assert(backoff.remainingMillis < 0 || backoff.endTime() === (t1 plus step))
+    assert(backoff.remainingMillis < 0 || backoff.endTime() === (t1 plus step).toEpochMilli)
   }
 
   test("End time is positive and less or equal than the cap") {
