@@ -35,8 +35,8 @@ dependencies {
     testImplementation group: 'org.slf4j', name: 'slf4j-simple', version: slf4jVersion
     testImplementation group: 'org.scalatestplus', name: "scalatestplus-mockito_$scalaMajorVersion", version: mockitoVersion
     testImplementation group: 'com.vladsch.flexmark', name: 'flexmark-all', version: '0.35.10' // required by scalatest (only version 0.35.10)
-    testRuntime 'org.pegdown:pegdown:1.4.2' // required by com.github.maiflai.scalatest
-    testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    testRuntimeOnly 'org.pegdown:pegdown:1.4.2' // required by com.github.maiflai.scalatest
+    testRuntimeOnly "org.slf4j:slf4j-log4j12:$slf4jVersion"
 }
 
 repositories {
@@ -46,8 +46,8 @@ repositories {
 
     mavenLocal()
     mavenCentral()
-    maven { url "http://packages.confluent.io/maven/" }
-    maven { url "http://repo.typesafe.com/typesafe/releases/" }
+    maven { url "https://packages.confluent.io/maven/" }
+    maven { url "https://repo.typesafe.com/typesafe/releases/" }
 }
 
 shadowJar {
@@ -57,4 +57,9 @@ shadowJar {
 configurations.all {
     // for error "SLF4J: Class path contains multiple SLF4J bindings."
     exclude module: 'slf4j-log4j12'
+}
+
+test {
+    testLogging.showStandardStreams = true
+    testLogging.exceptionFormat = 'full'
 }

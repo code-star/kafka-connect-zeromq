@@ -3,30 +3,32 @@ Kafka Connect ZeroMQ
 
 A Kafka Connect source connector for the ZeroMQ messaging library. 
 
-For the moment, it only works in publish/subscribe mode.
-
 Requirements
 ------------
 
 - Java 8
 - Docker 19
 
+Building
+--------
+
+Build the source code and create a uber jar containing all of the classfiles for the plugin and its third-party dependencies:
+
+    ./gradlew clean shadowJar
+
 Installation
 ------------
 
-Build the source code, and then build and deploy locally the Docker image with:
+There are two ways of installing a Kafka Connect plugin. The first is to build a single uber jar and add it to a Kafka Connect plugin path.
 
-    ./bin/deploy.sh
-    
-You can check that the Docker image is installed with:
-
-    docker images | grep zeromq 
-
-There are two ways to installing a Kafka Connect plugin. 
-The first is to build a single uber JAR containing all of the classfiles for the plugin and its third-party dependencies. 
-The second is to create a directory on the file system that contains the JAR files for the plugin and its third-party dependencies
+The second is to create a directory on the file system that contains the jar files for the plugin and its third-party dependencies
 (See [Create a Docker Image containing Local Connectors](https://docs.confluent.io/current/connect/managing/extending.html#create-a-docker-image-containing-local-connectors)).
-Our `deploy.sh` script applies the first one.
+
+For building the Docker image locally, run:
+
+    ./build-docker.sh
+    
+Optional: check that the Docker image is installed with: `docker images | grep zeromq`.
 
 Configuration
 -------------

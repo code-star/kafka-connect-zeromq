@@ -2,22 +2,19 @@
 
 LIBS=build/libs
 
-echo "== Building source code, testing, and creating fat jar..."
-./gradlew clean shadowJar
-
 CONNECTOR_OWNER=codestar
 CONNECTOR_NAME=kafka-connect-zeromq
 CONNECTOR_VERSION=0.1
-ZIPFILE=$CONNECTOR_OWNER-$CONNECTOR_NAME-$CONNECTOR_VERSION.zip
 JARFILE=$CONNECTOR_NAME-$CONNECTOR_VERSION-all.jar
+ZIPFILE=$CONNECTOR_OWNER-$CONNECTOR_NAME-$CONNECTOR_VERSION.zip
 
 if [ ! -f "$LIBS/$JARFILE" ]; then
-    echo "$LIBS/$JARFILE does not exist; building must have failed"
+    echo "$LIBS/$JARFILE does not exist; rebuild source code"
     exit 1
 fi
 
-echo "== Compressing fat jar into $LIBS/$ZIPFILE (required by Dockerfile)"
-zip $LIBS/$ZIPFILE $LIBS/$JARFILE
+echo "== Compressing uber jar into $LIBS/$ZIPFILE"
+zip $LIBS/$ZIPFILE $LIBS/$JARFILE || exit 1
 
 if [ ! -f "$LIBS/$ZIPFILE" ]; then
     echo "$LIBS/$ZIPFILE does not exist"

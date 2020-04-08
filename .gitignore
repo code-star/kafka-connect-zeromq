@@ -1,7 +1,7 @@
 # gradle
 .gradle
 build
-gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
 
 # intellij idea
 *.log
