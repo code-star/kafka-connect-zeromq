@@ -45,48 +45,7 @@ In addition to the default configuration for Kafka connectors (e.g. `name`, `con
 | `zeromq.nrIoThreads`     | integer         | no       |       1 | number of ZeroMQ threads                                      |
 | `zeromq.kafka.topic`     | string          | yes      |         | Kafka topic to write the messages to                          |
 
-For an example, see [this config file](example/config/zeromq-source.config-example.json).
-
-How to use
-----------
-
-The following example in distributed mode will use the ZeroMQ connector for fetching NS train locations records.
-
-Start Zookeeper, Kafka, Kafka Connect, etc:
-
-    ./example/start.sh
-
-Check that all containers are running and started, specially the `connect` service:
-
-    ./example/wait-for-service.sh
-
-check that our connector is listed as available to the `connect` service: 
-
-    curl localhost:8083/connector-plugins | jq
-
-and then add the connector by posting a configuration to the Kafka Connect REST API:
-
-    curl -s -X POST -H 'Content-Type: application/json' \
-        --data @example/zeromq-source-config.ndovloket-example.json \
-        http://localhost:8083/connectors | jq
-
-To check that the connector is running, we can try to consume some messages:
-
-    ./example/consume.sh
-
-or we can verify the `connect` service logs:
-
-    docker logs -f connect
-
-We can also verify whether our setup is working as expected by 
-using the Confluent Control Center, which gives us the possibility 
-to monitor our Kafka broker, topics, consumers, connectors etc. 
-To access it, navigate to the host and port where it’s running 
---in our case it would be http://localhost:9021/.
-
-Finally, stop all running services with:
-
-    ./example/stop.sh
+For an example, see [this config file](docs/zeromq-source-config-example.json).
 
 Authors
 -------
