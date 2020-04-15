@@ -3,6 +3,8 @@ Kafka Connect ZeroMQ
 
 A Kafka Connect source connector for the ZeroMQ messaging library. 
 
+![Scala CI with Gradle](https://github.com/code-star/kafka-connect-zeromq/workflows/Scala%20CI%20with%20Gradle/badge.svg)
+
 Requirements
 ------------
 
